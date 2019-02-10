@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="bubble-range.css">
+</head>
+<body>
+<div class="test" style="margin-top: 500px"></div>
+<div class="value"></div>
+<script src="dist/main.js" ></script>
+<script>
+    var range = new bubbleRange.BubbleRange({
+        wrapper: '.test',
+        opacity: 0.5,
+        description: 'kitchen',
+        icon: true,
+        size: '300px',
+        wrapperValue: '.value',
+        startValue: 0
+    });
+</script>
+</body>
+</html>
