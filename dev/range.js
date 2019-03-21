@@ -10,17 +10,14 @@ import {
 export function Range(data) {
     this.data = data;
     this.value = 0;
+    this.wrapperValue = null;
     this.init();
 }
 
 Range.prototype.init = function () {
     this.createRange();
     this.addEvents();
-    if (this.data.startValue) {
-        this.showValue(this.data.startValue);
-    } else {
-        this.showValue(0);
-    }
+    this.data.startValue ? this.showValue(this.data.startValue) : this.showValue(0);
 };
 
 Range.prototype.createRange = function () {
@@ -38,7 +35,6 @@ Range.prototype.createRange = function () {
     }
 };
 
-
 Range.prototype.addIcon = function () {
     this.icon = document.createElement('div');
     this.icon.classList.add('icon');
@@ -55,12 +51,11 @@ Range.prototype.addDescription = function () {
     description.classList.add('bubble-range__description');
     description.innerHTML = this.data.description;
     this.data.parent.appendChild(description);
-
 };
 
 Range.prototype.addEvents = function () {
     var heightElement = setSizeControl(this.data.size),
-        startPoint = 0,
+        startPoint = null,
         isDown = false,
         self = this,
         differentOpacity = 1 - this.data.opacity;
@@ -109,7 +104,7 @@ Range.prototype.addEvents = function () {
     this.data.parent.addEventListener('mousedown', mouseDown.bind(this));
     this.data.parent.addEventListener('mouseup', mouseUpLeave.bind(this));
     this.data.parent.addEventListener('mousemove', mouseMove.bind(this));
-    this.data.parent.addEventListener('mouseleave', mouseUpLeave.bind(this));
+    // this.data.parent.addEventListener('mouseleave', mouseUpLeave.bind(this));
     // mobile
     this.bobbleRangeControl.addEventListener('touchmove', touchMove.bind(this));
 };
@@ -134,7 +129,7 @@ Range.prototype.changeOpacity = function (currentValue, differentOpacity) {
 };
 
 Range.prototype.showValue = function (value) {
-    if (!this.wrapperValue) {
+    if (!this.wrapperValue && this.data.wrapperValue) {
         this.wrapperValue = document.querySelector(this.data.wrapperValue);
     }
     if (this.wrapperValue) {
