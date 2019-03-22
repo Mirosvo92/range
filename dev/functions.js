@@ -51,7 +51,7 @@ export function deleteClassElement(element, name) {
 
 export function setSizeControl (size, startValue) {
     if (startValue) {
-        return size * parseInt(startValue) / 100
+        return size * parseInt(startValue + 20) / 100
     } else {
         return size * 20 / 100;
     }

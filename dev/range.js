@@ -9,8 +9,9 @@ import {
 
 export function Range(data) {
     this.data = data;
-    this.value = 0;
+    this.value = this.data.startValue || 0;
     this.wrapperValue = null;
+    this.sizeControl = setSizeControl(this.data.size, this.data.startValue);
     this.init();
 }
 
@@ -23,8 +24,8 @@ Range.prototype.init = function () {
 Range.prototype.createRange = function () {
     this.bobbleRangeControl = document.createElement('div');
     this.bobbleRangeControl.classList.add('bubble-range__control');
-    this.bobbleRangeControl.style.width = setSizeControl(this.data.size, this.data.startValue) + 'px';
-    this.bobbleRangeControl.style.height = setSizeControl(this.data.size, this.data.startValue) + 'px';
+    this.bobbleRangeControl.style.width = this.sizeControl + 'px';
+    this.bobbleRangeControl.style.height = this.sizeControl + 'px';
     this.bobbleRangeControl.style.backgroundColor = this.data.backgroundColorControl;
     this.data.parent.appendChild(this.bobbleRangeControl);
     if (this.data.icon) {
@@ -54,14 +55,12 @@ Range.prototype.addDescription = function () {
 };
 
 Range.prototype.addEvents = function () {
-    var heightElement = setSizeControl(this.data.size),
-        startPoint = null,
+    var startPoint = this.bobbleRangeControl.getBoundingClientRect(),
         isDown = false,
-        self = this,
         differentOpacity = 1 - this.data.opacity;
 
     function mouseDown(event) {
-        if (validateCoordinates(event.clientX, event.clientY, self.bobbleRangeControl)) {
+        if (validateCoordinates(event.clientX, event.clientY, this.bobbleRangeControl)) {
             addClassElement(this.bobbleRangeControl, 'bubble-range__control--active');
             addClassElement(this.bobbleRangeControl.parentNode, 'bubble-range--active');
             isDown = true;
@@ -76,14 +75,10 @@ Range.prototype.addEvents = function () {
 
     function mouseMove(event) {
         if (isDown) {
-            if (!startPoint) {
-                startPoint = event.clientY;
-            }
-            if (startPoint >= event.clientY) {
-                var currentHeight = startPoint - event.clientY + heightElement;
-                if (validateHeight(currentHeight, this.data.size, this.data.indent)) {
-                    self.setProperties(currentHeight, differentOpacity);
-                }
+            var currentHeight = startPoint.y - event.clientY + this.sizeControl;
+            var currentValue = this.rangeValue(Number(currentHeight));
+            if (Math.round(currentValue) > -1 && Math.round(currentValue) < 101) {
+                this.setProperties(currentHeight, differentOpacity);
             }
         }
     }
@@ -96,7 +91,7 @@ Range.prototype.addEvents = function () {
         if (startPoint >= event.targetTouches[0].pageY) {
             var currentHeight = startPoint - event.targetTouches[0].pageY + heightElement;
             if (validateHeight(currentHeight, this.data.size, this.data.indent)) {
-                self.setProperties(currentHeight, differentOpacity);
+                this.setProperties(currentHeight, differentOpacity);
             }
         }
     }
@@ -113,13 +108,13 @@ Range.prototype.setProperties = function (currentHeight, differentOpacity) {
     this.bobbleRangeControl.style.width = currentHeight + 'px';
     this.bobbleRangeControl.style.height = currentHeight + 'px';
     this.changeIconSize(currentHeight);
-    this.changeOpacity(this.showRangeValue(Number(currentHeight)), differentOpacity);
-    this.showRangeValue(currentHeight);
-    this.value = this.showRangeValue(Number(currentHeight));
+    this.changeOpacity(this.rangeValue(Number(currentHeight)), differentOpacity);
+    this.rangeValue(currentHeight);
+    this.value = this.rangeValue(Number(currentHeight));
     this.showValue(this.value);
 };
 
-Range.prototype.showRangeValue = function (currentSize) {
+Range.prototype.rangeValue = function (currentSize) {
     return (currentSize - setSizeControl(this.data.size)) * 100 / (this.data.size - setSizeControl(this.data.size) - this.data.indent);
 };
 
@@ -129,7 +124,7 @@ Range.prototype.changeOpacity = function (currentValue, differentOpacity) {
 };
 
 Range.prototype.showValue = function (value) {
-    if (!this.wrapperValue && this.data.wrapperValue) {
+    if (!this.wrapperValue) {
         this.wrapperValue = document.querySelector(this.data.wrapperValue);
     }
     if (this.wrapperValue) {
